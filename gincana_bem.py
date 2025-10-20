@@ -61,7 +61,7 @@ st.markdown("""
 st.markdown('<div class="main-header">🎄 Gincana do Bem 2025: Dashboard Interativo</div>', unsafe_allow_html=True)
 
 # Caminho absoluto da planilha
-PLANILHA_PATH = '/home/iauser/1.Tiago_Alves/portfolio/gincana_do_bem/planilha_gincana_solidaria.xlsx'
+PLANILHA_PATH = 'https://github.com/Tiagoalvesds/gincana_do_bem/blob/main/planilha_gincana_solidaria.xlsx'
 
 # Função para carregar dados
 @st.cache_data
@@ -117,10 +117,10 @@ def create_demo_data():
             'Osias Fernando', 'Pabllo Gomes', 'Patricia Barbosa', 'Raécio Griêco', 'Thiago Porto',
             'Tiago Alves', 'Wanderson Saldanha'
         ],
-        'Grupo': ['2', 'VIRTUX', 'VIRTUX', 'VIRTUX', '2', 'PACE DO BEM', 'PACE DO BEM', 'VIRTUX', 
-                 '2', 'PACE DO BEM', '2', 'PACE DO BEM', 'VIRTUX', 'VIRTUX', '2', 'PACE DO BEM', 
-                 '2', 'PACE DO BEM', 'PACE DO BEM', '2', '2', 'VIRTUX', 'PACE DO BEM', 'PACE DO BEM', 
-                 'VIRTUX', '2']
+        'Grupo': ['MOTIVADOS NETSUPRE', 'VIRTUX', 'VIRTUX', 'VIRTUX', 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 'PACE DO BEM', 'VIRTUX', 
+                 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 'VIRTUX', 'VIRTUX', 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 
+                 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 'PACE DO BEM', 'MOTIVADOS NETSUPRE', 'MOTIVADOS NETSUPRE', 'VIRTUX', 'PACE DO BEM', 'PACE DO BEM', 
+                 'VIRTUX', 'MOTIVADOS NETSUPRE']
     })
     
     categorias = pd.DataFrame({
