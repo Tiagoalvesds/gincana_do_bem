@@ -61,7 +61,7 @@ st.markdown("""
 st.markdown('<div class="main-header">🎄 Gincana do Bem 2025: Dashboard Interativo</div>', unsafe_allow_html=True)
 
 # Caminho absoluto da planilha
-PLANILHA_PATH = 'https://github.com/Tiagoalvesds/gincana_do_bem/blob/main/planilha_gincana_solidaria.csv'
+PLANILHA_PATH = 'https://github.com/Tiagoalvesds/gincana_do_bem/blob/main/planilha_gincana_solidaria.xlsx'
 
 # Função para carregar dados
 @st.cache_data
