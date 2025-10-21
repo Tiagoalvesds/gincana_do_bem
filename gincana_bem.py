@@ -4,9 +4,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import numpy as np
-import os
-import requests
-from io import BytesIO
 
 # Configuração da página
 st.set_page_config(
@@ -62,24 +59,17 @@ st.markdown("""
 # Título principal
 st.markdown('<div class="main-header">🎄 Gincana do Bem 2025: Dashboard Interativo</div>', unsafe_allow_html=True)
 
-# Caminho absoluto da planilha
-PLANILHA_PATH = 'https://github.com/Tiagoalvesds/gincana_do_bem/raw/main/planilha_gincana_solidaria.xlsx'
+# Caminho absoluto da planilha (URL raw do GitHub)
+PLANILHA_PATH = 'https://raw.githubusercontent.com/Tiagoalvesds/gincana_do_bem/main/planilha_gincana_solidaria.xlsx'
 
 # Função para carregar dados
 @st.cache_data
 def load_data():
     try:
-        # Baixar arquivo do GitHub
-        response = requests.get(PLANILHA_PATH)
-        response.raise_for_status()
-        
-        # Carregar da memória
-        excel_file = BytesIO(response.content)
-        
-        # Carregar as abas da planilha
-        participantes = pd.read_excel(excel_file, sheet_name='participantes')
-        categorias = pd.read_excel(excel_file, sheet_name='categorias')
-        doacoes = pd.read_excel(excel_file, sheet_name='doacoes_registros')
+        # Carregar as abas da planilha diretamente da URL
+        participantes = pd.read_excel(PLANILHA_PATH, sheet_name='participantes')
+        categorias = pd.read_excel(PLANILHA_PATH, sheet_name='categorias')
+        doacoes = pd.read_excel(PLANILHA_PATH, sheet_name='doacoes_registros')
         
         # Converter coluna Grupo para string para evitar problemas de tipo
         participantes['Grupo'] = participantes['Grupo'].astype(str)
