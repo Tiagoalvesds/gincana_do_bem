@@ -67,11 +67,6 @@ PLANILHA_PATH = 'https://github.com/Tiagoalvesds/gincana_do_bem/raw/main/planilh
 @st.cache_data
 def load_data():
     try:
-        # Verificar se a planilha existe
-        if not os.path.exists(PLANILHA_PATH):
-            st.error(f"❌ Planilha não encontrada em: {PLANILHA_PATH}")
-            st.info("📝 Verifique se o arquivo existe no diretório especificado")
-            return None, None, None
         
         # Carregar as abas da planilha
         participantes = pd.read_excel(PLANILHA_PATH, sheet_name='participantes')
