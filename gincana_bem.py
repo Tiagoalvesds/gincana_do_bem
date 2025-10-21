@@ -8,7 +8,7 @@ import numpy as np
 # Configuração da página
 st.set_page_config(
     page_title="Gincana do Bem| Netsupre",
-    page_icon="🎄",
+    page_icon="🌟",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -57,7 +57,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Título principal
-st.markdown('<div class="main-header">🎄 Gincana do Bem 2025: Dashboard Interativo</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">🎄 Gincana do Bem 2025 🎄 Netsupre </div>', unsafe_allow_html=True)
 
 # Caminho absoluto da planilha (URL raw do GitHub)
 PLANILHA_PATH = 'https://raw.githubusercontent.com/Tiagoalvesds/gincana_do_bem/main/planilha_gincana_solidaria.xlsx'
