@@ -61,17 +61,36 @@ st.markdown("""
 st.markdown('<div class="main-header">🎄 Gincana do Bem 2025: Dashboard Interativo</div>', unsafe_allow_html=True)
 
 # Caminho absoluto da planilha
-PLANILHA_PATH = 'https://github.com/Tiagoalvesds/gincana_do_bem/raw/main/planilha_gincana_solidaria.xlsx'
+PLANILHA_URL = 'https://github.com/Tiagoalvesds/gincana_do_bem/raw/main/planilha_gincana_solidaria.xlsx'
 
 # Função para carregar dados
 @st.cache_data
 def load_data():
     try:
+        # Carregar as abas da planilha diretamente da URL
+        participantes = pd.read_excel(PLANILHA_URL, sheet_name='participantes')
+        categorias = pd.read_excel(PLANILHA_URL, sheet_name='categorias')
+        doacoes = pd.read_excel(PLANILHA_URL, sheet_name='doacoes_registros')
         
-        # Carregar as abas da planilha
-        participantes = pd.read_excel(PLANILHA_PATH, sheet_name='participantes')
-        categorias = pd.read_excel(PLANILHA_PATH, sheet_name='categorias')
-        doacoes = pd.read_excel(PLANILHA_PATH, sheet_name='doacoes_registros')
+        # VERIFICAR SE HÁ DADOS REAIS NAS DOAÇÕES
+        # A planilha tem fórmulas mas pode estar sem dados preenchidos
+        doacoes_preenchidas = False
+        
+        # Verificar se há dados nas colunas principais (excluindo cabeçalho e fórmulas)
+        colunas_verificar = ['Nome', 'Categoria', 'Quantidade']
+        for coluna in colunas_verificar:
+            if coluna in doacoes.columns:
+                # Verificar se há valores não nulos além do cabeçalho
+                valores_validos = doacoes[coluna].dropna()
+                if len(valores_validos) > 1:  # Mais que apenas o cabeçalho
+                    doacoes_preenchidas = True
+                    break
+        
+        if not doacoes_preenchidas:
+            st.warning("📝 Planilha carregada, mas sem dados de doações preenchidos")
+            # Retornar dados vazios para doações, mas manter participantes e categorias
+            doacoes = pd.DataFrame(columns=['SPRINT', 'Data', 'Nome', 'Grupo', 'Categoria', 'Tipo_Item', 
+                                          'Quantidade', 'Pontos_Unit', 'Pontos_Total', 'Bonus', 'Total_Geral', 'Observações'])
         
         # Converter coluna Grupo para string para evitar problemas de tipo
         participantes['Grupo'] = participantes['Grupo'].astype(str)
@@ -90,12 +109,14 @@ def load_data():
                 )
                 doacoes[col] = pd.to_numeric(doacoes[col], errors='coerce').fillna(0)
         
-        st.success(f"✅ Dados carregados com sucesso! {len(doacoes)} registros encontrados.")
+        st.success(f"✅ Dados carregados com sucesso!")
+        st.info(f"📊 {len(participantes)} participantes | 🎯 {len(categorias)} categorias | 📦 {len(doacoes)} doações")
+        
         return participantes, categorias, doacoes
         
     except Exception as e:
         st.error(f"❌ Erro ao carregar dados: {e}")
-        st.info("💡 Dica: Verifique se a planilha está no formato correto e se todas as abas existem")
+        st.info("💡 Execute: pip install openpyxl")
         return None, None, None
 
 # Função para criar dados de demonstração
@@ -112,10 +133,10 @@ def create_demo_data():
             'Osias Fernando', 'Pabllo Gomes', 'Patricia Barbosa', 'Raécio Griêco', 'Thiago Porto',
             'Tiago Alves', 'Wanderson Saldanha'
         ],
-        'Grupo': ['MOTIVADOS NETSUPRE', 'VIRTUX', 'VIRTUX', 'VIRTUX', 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 'PACE DO BEM', 'VIRTUX', 
-                 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 'VIRTUX', 'VIRTUX', 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 
-                 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 'PACE DO BEM', 'MOTIVADOS NETSUPRE', 'MOTIVADOS NETSUPRE', 'VIRTUX', 'PACE DO BEM', 'PACE DO BEM', 
-                 'VIRTUX', 'MOTIVADOS NETSUPRE']
+        'Grupo': ['Motivados Net Supre', 'VIRTUX', 'VIRTUX', 'VIRTUX', 'Motivados Net Supre', 'PACE DO BEM', 'PACE DO BEM', 'VIRTUX', 
+                 'Motivados Net Supre', 'PACE DO BEM', 'Motivados Net Supre', 'PACE DO BEM', 'VIRTUX', 'VIRTUX', 'Motivados Net Supre', 'PACE DO BEM', 
+                 'Motivados Net Supre', 'PACE DO BEM', 'PACE DO BEM', 'Motivados Net Supre', 'Motivados Net Supre', 'VIRTUX', 'PACE DO BEM', 'PACE DO BEM', 
+                 'VIRTUX', 'Motivados Net Supre']
     })
     
     categorias = pd.DataFrame({
@@ -174,8 +195,35 @@ def create_demo_data():
 # Carregar dados
 participantes, categorias, doacoes = load_data()
 
-# Se não conseguiu carregar os dados reais, usar dados de demonstração
+# Verificar se deve usar dados de demonstração
+usar_demo = False
+
 if participantes is None:
+    # Erro ao carregar - usar demo
+    usar_demo = True
+elif len(doacoes) == 0 or ('Nome' in doacoes.columns and doacoes['Nome'].isna().all()):
+    # Planilha carregada mas sem dados de doações - perguntar ao usuário
+    st.warning("📊 Planilha carregada, mas sem dados de doações registrados")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🧪 Usar Dados de Demonstração", type="secondary"):
+            st.session_state.usar_demo = True
+            st.rerun()
+    with col2:
+        if st.button("📝 Continuar com Dados Vazios", type="primary"):
+            st.session_state.usar_demo = False
+            st.rerun()
+    
+    # Verificar se já temos uma decisão do usuário
+    if 'usar_demo' in st.session_state:
+        usar_demo = st.session_state.usar_demo
+    else:
+        # Se não houve interação do usuário ainda, mostrar info
+        st.info("💡 Escolha uma opção acima para continuar")
+        st.stop()
+
+if usar_demo:
     participantes, categorias, doacoes = create_demo_data()
 
 # Sidebar - Filtros
@@ -228,7 +276,7 @@ with tab1:
     # COMPARAÇÃO DE PONTUAÇÃO POR GRUPO - BARRAS INDIVIDUALIZADAS
     st.subheader("📈 Comparação de Pontuação por Grupo")
     
-    if 'Grupo' in doacoes_filtradas.columns and 'Total_Geral' in doacoes_filtradas.columns:
+    if 'Grupo' in doacoes_filtradas.columns and 'Total_Geral' in doacoes_filtradas.columns and len(doacoes_filtradas) > 0:
         # Filtrar grupos válidos (remover NaN)
         pontos_por_grupo = doacoes_filtradas.groupby('Grupo')['Total_Geral'].sum()
         pontos_por_grupo = pontos_por_grupo[pontos_por_grupo.index.notna()]
@@ -247,7 +295,7 @@ with tab1:
                 # Definir cores específicas para cada grupo
                 cores_grupos = {
                     'PACE DO BEM': '#FF6B6B',
-                    '2': '#4ECDC4', 
+                    'Motivados Net Supre': '#4ECDC4', 
                     'VIRTUX': '#45B7D1'
                 }
                 
@@ -289,7 +337,7 @@ with tab1:
             else:
                 st.info("Nenhum dado disponível para exibir o gráfico de pizza.")
     else:
-        st.warning("Dados de grupos não disponíveis para exibição")
+        st.info("📝 Aguardando dados de doações para exibir gráficos")
     
     # TIMELINE DA GINCANA - DATAS CORRIGIDAS
     st.subheader("🗓️ Timeline da Gincana")
@@ -320,7 +368,7 @@ with tab1:
     # PROGRESSO DAS METAS - ATUALIZADO COM DADOS REAIS DA PLANILHA
     st.subheader("🎯 Progresso das Metas")
     
-    if 'Categoria' in doacoes_filtradas.columns and 'Quantidade' in doacoes_filtradas.columns:
+    if 'Categoria' in doacoes_filtradas.columns and 'Quantidade' in doacoes_filtradas.columns and len(doacoes_filtradas) > 0:
         # Usar as metas definidas na planilha de categorias
         metas = categorias.groupby('Categoria')['Meta_Grupo'].first()
         
@@ -342,14 +390,12 @@ with tab1:
                     st.write(f"**{progresso_atual:,} / {meta:,}**")
                     st.write(f"({percentual:.1f}%)")
     else:
-        st.info("Dados de categorias não disponíveis para exibir progresso")
-
-# ... (o restante do código permanece igual - tabs 2, 3, 4, 5)
+        st.info("📝 Aguardando dados de doações para exibir progresso das metas")
 
 with tab2:
     st.header("📊 Análise por Sprint")
     
-    if 'SPRINT' in doacoes_filtradas.columns and 'Total_Geral' in doacoes_filtradas.columns:
+    if 'SPRINT' in doacoes_filtradas.columns and 'Total_Geral' in doacoes_filtradas.columns and len(doacoes_filtradas) > 0:
         # Filtrar sprints válidas
         pontos_por_sprint = doacoes_filtradas.groupby('SPRINT')['Total_Geral'].sum()
         pontos_por_sprint = pontos_por_sprint[pontos_por_sprint.index.notna()]
@@ -407,7 +453,7 @@ with tab2:
                 else:
                     st.info("Nenhum dado disponível para a sprint selecionada.")
     else:
-        st.warning("Dados de sprints não disponíveis para análise")
+        st.info("📊 Aguardando dados de doações para análise por sprint")
 
 with tab3:
     st.header("👥 Análise por Grupo")
@@ -449,18 +495,18 @@ with tab3:
         
         with col1:
             st.subheader("🏆 Top Participantes")
-            if 'Nome' in grupo_data.columns and 'Total_Geral' in grupo_data.columns:
+            if 'Nome' in grupo_data.columns and 'Total_Geral' in grupo_data.columns and len(grupo_data) > 0:
                 top_participantes = grupo_data.groupby('Nome')['Total_Geral'].sum().nlargest(10)
                 
                 for i, (nome, pontos) in enumerate(top_participantes.items(), 1):
                     medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "🎯"
                     st.write(f"{medal} **{nome}**: {pontos:,.0f} pontos")
             else:
-                st.info("Dados de participantes não disponíveis")
+                st.info("📝 Aguardando dados de doações para este grupo")
         
         with col2:
             st.subheader("📊 Distribuição por Categoria")
-            if 'Categoria' in grupo_data.columns and 'Total_Geral' in grupo_data.columns:
+            if 'Categoria' in grupo_data.columns and 'Total_Geral' in grupo_data.columns and len(grupo_data) > 0:
                 cat_dist = grupo_data.groupby('Categoria')['Total_Geral'].sum()
                 if not cat_dist.empty:
                     fig = px.bar(
@@ -475,7 +521,7 @@ with tab3:
                 else:
                     st.info("Nenhuma categoria com dados para este grupo.")
             else:
-                st.info("Dados de categorias não disponíveis")
+                st.info("📊 Aguardando dados de categorias para este grupo")
 
 with tab4:
     st.header("👤 Análise Individual")
