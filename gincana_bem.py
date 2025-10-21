@@ -73,10 +73,9 @@ def load_data():
         doacoes = pd.read_excel(PLANILHA_URL, sheet_name='doacoes_registros')
         
         # VERIFICAR SE HÁ DADOS REAIS NAS DOAÇÕES
-        # A planilha tem fórmulas mas pode estar sem dados preenchidos
         doacoes_preenchidas = False
         
-        # Verificar se há dados nas colunas principais (excluindo cabeçalho e fórmulas)
+        # Verificar se há dados nas colunas principais (excluindo cabeçalho)
         colunas_verificar = ['Nome', 'Categoria', 'Quantidade']
         for coluna in colunas_verificar:
             if coluna in doacoes.columns:
@@ -88,7 +87,7 @@ def load_data():
         
         if not doacoes_preenchidas:
             st.warning("📝 Planilha carregada, mas sem dados de doações preenchidos")
-            # Retornar dados vazios para doações, mas manter participantes e categorias
+            # Criar DataFrame vazio com a estrutura correta
             doacoes = pd.DataFrame(columns=['SPRINT', 'Data', 'Nome', 'Grupo', 'Categoria', 'Tipo_Item', 
                                           'Quantidade', 'Pontos_Unit', 'Pontos_Total', 'Bonus', 'Total_Geral', 'Observações'])
         
@@ -104,7 +103,7 @@ def load_data():
                 # Extrair apenas valores numéricos das fórmulas
                 doacoes[col] = doacoes[col].apply(lambda x: 
                     float(str(x).replace('=G', '').replace('*H', '').split('*')[0]) 
-                    if isinstance(x, str) and '=' in str(x) 
+                    if isinstance(x, str) and '=' in str(x) and 'G' in str(x) and 'H' in str(x)
                     else x
                 )
                 doacoes[col] = pd.to_numeric(doacoes[col], errors='coerce').fillna(0)
@@ -115,129 +114,44 @@ def load_data():
         return participantes, categorias, doacoes
         
     except Exception as e:
-        st.error(f"❌ Erro ao carregar dados: {e}")
-        st.info("💡 Execute: pip install openpyxl")
+        st.error(f"❌ Erro ao carregar dados da planilha: {e}")
+        st.error("💡 **SOLUÇÃO:** Execute no terminal: `pip install openpyxl`")
         return None, None, None
-
-# Função para criar dados de demonstração
-def create_demo_data():
-    st.warning("📊 Usando dados de demonstração - Carregue sua planilha para ver os dados reais")
-    
-    # Dados de exemplo baseados na sua planilha original
-    participantes = pd.DataFrame({
-        'Nome': [
-            'Alexandre Alves', 'Ana Paula Martins', 'Bruno Hudson', 'Danillo Rodrigues',
-            'Durga', 'Eurípedes Lemes', 'Geovany Marcos', 'Gustavo Cordeiro', 'Igor Moreira',
-            'Ismael', 'Jessica Alcantara', 'Jorge Henrique', 'Jorge Nazaré', 'Kamila Nascimento',
-            'Lucas Dias', 'Lucas Rodrigues', 'Matheus Lima', 'Maycon cordeiro', 'Milena Jorge',
-            'Osias Fernando', 'Pabllo Gomes', 'Patricia Barbosa', 'Raécio Griêco', 'Thiago Porto',
-            'Tiago Alves', 'Wanderson Saldanha'
-        ],
-        'Grupo': ['Motivados Net Supre', 'VIRTUX', 'VIRTUX', 'VIRTUX', 'Motivados Net Supre', 'PACE DO BEM', 'PACE DO BEM', 'VIRTUX', 
-                 'Motivados Net Supre', 'PACE DO BEM', 'Motivados Net Supre', 'PACE DO BEM', 'VIRTUX', 'VIRTUX', 'Motivados Net Supre', 'PACE DO BEM', 
-                 'Motivados Net Supre', 'PACE DO BEM', 'PACE DO BEM', 'Motivados Net Supre', 'Motivados Net Supre', 'VIRTUX', 'PACE DO BEM', 'PACE DO BEM', 
-                 'VIRTUX', 'Motivados Net Supre']
-    })
-    
-    categorias = pd.DataFrame({
-        'Categoria': ['Brinquedos', 'Brinquedos', 'Roupas', 'Roupas', 'Material Escolar', 'Material Escolar', 'Alimentos', 'Alimentos', 'Higiene', 'Higiene'],
-        'Tipo_Item': ['Novo', 'Usado bom estado', 'Peça de roupa', 'Par de calçados', 'Item individual', 'Kit completo', 'Kg solto', 'Cesta básica', 'Item de higiene', 'Pacote de fraldas'],
-        'Pontos_Unit': [5, 3, 3, 5, 4, 10, 2, 5, 4, 6],
-        'Meta_Grupo': [100, 100, 150, 150, 80, 80, 500, 500, 200, 200],
-        'Bonus_Condicao': [
-            'Instituição específica', 'Instituição específica', 'Itens lavados/organizados',
-            'Itens lavados/organizados', 'Foco em 2026', 'Foco em 2026', 'Consistência semanal',
-            'Consistência semanal', 'Embalagens coletivas', 'Embalagens coletivas'
-        ],
-        'Bonus_Pontos': [50, 50, 40, 40, 60, 60, 20, 20, 30, 30]
-    })
-    
-    # Gerar dados de doações realistas
-    np.random.seed(42)
-    doacoes_data = []
-    sprints = ['1ºSPRINT', '2ºSPRINT', '3ºSPRINT']
-    categorias_list = ['Brinquedos', 'Roupas', 'Material Escolar', 'Alimentos', 'Higiene']
-    
-    for i in range(50):
-        nome = np.random.choice(participantes['Nome'])
-        grupo = participantes[participantes['Nome'] == nome]['Grupo'].iloc[0]
-        categoria = np.random.choice(categorias_list)
-        tipo_item = np.random.choice(categorias[categorias['Categoria'] == categoria]['Tipo_Item'].values)
-        pontos_unit = categorias[
-            (categorias['Categoria'] == categoria) & 
-            (categorias['Tipo_Item'] == tipo_item)
-        ]['Pontos_Unit'].iloc[0]
-        
-        quantidade = np.random.randint(1, 10)
-        pontos_total = quantidade * pontos_unit
-        bonus = np.random.choice([0, 20, 30, 40, 50, 60], p=[0.7, 0.1, 0.05, 0.05, 0.05, 0.05])
-        total_geral = pontos_total + bonus
-        
-        doacoes_data.append({
-            'SPRINT': np.random.choice(sprints),
-            'Data': f"2024-{np.random.randint(10, 13):02d}-{np.random.randint(1, 28):02d}",
-            'Nome': nome,
-            'Grupo': grupo,
-            'Categoria': categoria,
-            'Tipo_Item': tipo_item,
-            'Quantidade': quantidade,
-            'Pontos_Unit': pontos_unit,
-            'Pontos_Total': pontos_total,
-            'Bonus': bonus,
-            'Total_Geral': total_geral,
-            'Observações': 'Doação registrada' if bonus == 0 else 'Doação com bônus'
-        })
-    
-    doacoes = pd.DataFrame(doacoes_data)
-    
-    return participantes, categorias, doacoes
 
 # Carregar dados
 participantes, categorias, doacoes = load_data()
 
-# Verificar se deve usar dados de demonstração
-usar_demo = False
-
+# SE HOUVE ERRO AO CARREGAR, PARAR A EXECUÇÃO
 if participantes is None:
-    # Erro ao carregar - usar demo
-    usar_demo = True
-elif len(doacoes) == 0 or ('Nome' in doacoes.columns and doacoes['Nome'].isna().all()):
-    # Planilha carregada mas sem dados de doações - perguntar ao usuário
-    st.warning("📊 Planilha carregada, mas sem dados de doações registrados")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🧪 Usar Dados de Demonstração", type="secondary"):
-            st.session_state.usar_demo = True
-            st.rerun()
-    with col2:
-        if st.button("📝 Continuar com Dados Vazios", type="primary"):
-            st.session_state.usar_demo = False
-            st.rerun()
-    
-    # Verificar se já temos uma decisão do usuário
-    if 'usar_demo' in st.session_state:
-        usar_demo = st.session_state.usar_demo
-    else:
-        # Se não houve interação do usuário ainda, mostrar info
-        st.info("💡 Escolha uma opção acima para continuar")
-        st.stop()
+    st.stop()
 
-if usar_demo:
-    participantes, categorias, doacoes = create_demo_data()
+# Verificar se há dados de doações
+if len(doacoes) == 0 or ('Nome' in doacoes.columns and doacoes['Nome'].isna().all()):
+    st.warning("📊 Planilha carregada com sucesso, mas **sem dados de doações**")
+    st.info("""
+    **📝 Para começar a usar:**
+    1. Adicione dados na aba **'doacoes_registros'** da planilha
+    2. Preencha colunas como: Nome, Categoria, Tipo_Item, Quantidade
+    3. Os pontos serão calculados automaticamente
+    4. Clique em **'Recarregar Dados'** na sidebar para atualizar
+    """)
+    
+    # Criar dados vazios para evitar erros nas visualizações
+    doacoes = pd.DataFrame(columns=['SPRINT', 'Data', 'Nome', 'Grupo', 'Categoria', 'Tipo_Item', 
+                                  'Quantidade', 'Pontos_Unit', 'Pontos_Total', 'Bonus', 'Total_Geral', 'Observações'])
 
 # Sidebar - Filtros
 st.sidebar.title("🔍 Filtros e Controles")
 
-# Filtro por Grupo - CORRIGIDO: converter para string antes de ordenar
+# Filtro por Grupo
 grupos_unicos = [str(grupo) for grupo in participantes['Grupo'].unique()]
 # Remover valores NaN ou vazios
 grupos_unicos = [g for g in grupos_unicos if g and str(g) != 'nan' and str(g) != 'NaN']
-grupos_disponiveis = ['Todos'] + sorted(grupos_unicos, key=lambda x: (x.isdigit(), int(x) if x.isdigit() else x))
+grupos_disponiveis = ['Todos'] + sorted(grupos_unicos)
 grupo_selecionado = st.sidebar.selectbox('Selecionar Grupo:', grupos_disponiveis)
 
 # Filtro por Sprint
-sprints_unicos = [str(s) for s in doacoes['SPRINT'].dropna().unique()] if 'SPRINT' in doacoes.columns else []
+sprints_unicos = [str(s) for s in doacoes['SPRINT'].dropna().unique()] if 'SPRINT' in doacoes.columns and len(doacoes) > 0 else []
 # Remover valores NaN ou vazios
 sprints_unicos = [s for s in sprints_unicos if s and str(s) != 'nan' and str(s) != 'NaN']
 sprints_disponiveis = ['Todos'] + sorted(sprints_unicos)
@@ -247,7 +161,7 @@ sprint_selecionada = st.sidebar.selectbox('Selecionar Sprint:', sprints_disponiv
 doacoes_filtradas = doacoes.copy()
 if grupo_selecionado != 'Todos':
     doacoes_filtradas = doacoes_filtradas[doacoes_filtradas['Grupo'] == grupo_selecionado]
-if sprint_selecionada != 'Todos' and 'SPRINT' in doacoes_filtradas.columns:
+if sprint_selecionada != 'Todos' and 'SPRINT' in doacoes_filtradas.columns and len(doacoes_filtradas) > 0:
     doacoes_filtradas = doacoes_filtradas[doacoes_filtradas['SPRINT'] == sprint_selecionada]
 
 # Abas principais
@@ -256,13 +170,13 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏆 Dashboard Geral", "📊 Por Sprint
 with tab1:
     st.header("🎯 Visão Geral da Gincana")
     
-    # Métricas principais - CORRIGIDO: total_doacoes agora soma a coluna Quantidade
+    # Métricas principais
     col1, col2, col3, col4 = st.columns(4)
     
-    total_pontos = doacoes_filtradas['Total_Geral'].sum() if 'Total_Geral' in doacoes_filtradas.columns else 0
-    total_doacoes = doacoes_filtradas['Quantidade'].sum() if 'Quantidade' in doacoes_filtradas.columns else 0
-    grupos_ativos = doacoes_filtradas['Grupo'].nunique() if 'Grupo' in doacoes_filtradas.columns else 0
-    participantes_ativos = doacoes_filtradas['Nome'].nunique() if 'Nome' in doacoes_filtradas.columns else 0
+    total_pontos = doacoes_filtradas['Total_Geral'].sum() if 'Total_Geral' in doacoes_filtradas.columns and len(doacoes_filtradas) > 0 else 0
+    total_doacoes = doacoes_filtradas['Quantidade'].sum() if 'Quantidade' in doacoes_filtradas.columns and len(doacoes_filtradas) > 0 else 0
+    grupos_ativos = doacoes_filtradas['Grupo'].nunique() if 'Grupo' in doacoes_filtradas.columns and len(doacoes_filtradas) > 0 else 0
+    participantes_ativos = doacoes_filtradas['Nome'].nunique() if 'Nome' in doacoes_filtradas.columns and len(doacoes_filtradas) > 0 else 0
     
     with col1:
         st.metric("🏅 Total de Pontos", f"{total_pontos:,.0f}")
@@ -273,7 +187,7 @@ with tab1:
     with col4:
         st.metric("🙋 Participantes Ativos", participantes_ativos)
     
-    # COMPARAÇÃO DE PONTUAÇÃO POR GRUPO - BARRAS INDIVIDUALIZADAS
+    # COMPARAÇÃO DE PONTUAÇÃO POR GRUPO
     st.subheader("📈 Comparação de Pontuação por Grupo")
     
     if 'Grupo' in doacoes_filtradas.columns and 'Total_Geral' in doacoes_filtradas.columns and len(doacoes_filtradas) > 0:
@@ -287,9 +201,8 @@ with tab1:
         col1, col2 = st.columns(2)
         
         with col1:
-            # GRÁFICO DE BARRAS INDIVIDUALIZADAS - CADA GRUPO COM SUA PRÓPRIA BARRA
+            # GRÁFICO DE BARRAS INDIVIDUALIZADAS
             if not pontos_por_grupo.empty:
-                # Criar gráfico com barras individuais para cada grupo
                 fig = go.Figure()
                 
                 # Definir cores específicas para cada grupo
@@ -301,7 +214,7 @@ with tab1:
                 
                 # Adicionar uma barra para cada grupo individualmente
                 for grupo in pontos_por_grupo.index:
-                    cor = cores_grupos.get(grupo, '#888888')  # Cor padrão se não encontrado
+                    cor = cores_grupos.get(grupo, '#888888')
                     fig.add_trace(go.Bar(
                         x=[grupo],
                         y=[pontos_por_grupo[grupo]],
@@ -322,7 +235,7 @@ with tab1:
                 
                 st.plotly_chart(fig, use_container_width=True)
             else:
-                st.info("Nenhum dado disponível para exibir o gráfico de grupos.")
+                st.info("📊 Aguardando dados de doações para exibir gráficos")
         
         with col2:
             # Gráfico de pizza para distribuição percentual
@@ -335,11 +248,11 @@ with tab1:
                 )
                 st.plotly_chart(fig, use_container_width=True)
             else:
-                st.info("Nenhum dado disponível para exibir o gráfico de pizza.")
+                st.info("📊 Aguardando dados de doações para exibir gráficos")
     else:
-        st.info("📝 Aguardando dados de doações para exibir gráficos")
+        st.info("📊 Aguardando dados de doações para exibir gráficos")
     
-    # TIMELINE DA GINCANA - DATAS CORRIGIDAS
+    # TIMELINE DA GINCANA
     st.subheader("🗓️ Timeline da Gincana")
     
     # Criar timeline visual
@@ -365,7 +278,7 @@ with tab1:
         st.metric("🏁 Término", "19/12/2025")
         st.info("Encerramento")
     
-    # PROGRESSO DAS METAS - ATUALIZADO COM DADOS REAIS DA PLANILHA
+    # PROGRESSO DAS METAS
     st.subheader("🎯 Progresso das Metas")
     
     if 'Categoria' in doacoes_filtradas.columns and 'Quantidade' in doacoes_filtradas.columns and len(doacoes_filtradas) > 0:
@@ -379,7 +292,7 @@ with tab1:
         for categoria in categorias['Categoria'].unique():
             if categoria in metas.index:
                 meta = metas[categoria]
-                progresso_atual = progresso.get(categoria, 0)  # 0 se não houver doações
+                progresso_atual = progresso.get(categoria, 0)
                 percentual = min(progresso_atual / meta * 100, 100) if meta > 0 else 0
                 
                 col1, col2 = st.columns([3, 1])
@@ -390,7 +303,7 @@ with tab1:
                     st.write(f"**{progresso_atual:,} / {meta:,}**")
                     st.write(f"({percentual:.1f}%)")
     else:
-        st.info("📝 Aguardando dados de doações para exibir progresso das metas")
+        st.info("📊 Aguardando dados de doações para exibir progresso das metas")
 
 with tab2:
     st.header("📊 Análise por Sprint")
@@ -402,24 +315,24 @@ with tab2:
         pontos_por_sprint = pontos_por_sprint[pontos_por_sprint.index.astype(str) != 'nan']
         pontos_por_sprint = pontos_por_sprint[pontos_por_sprint.index.astype(str) != 'NaN']
         
-        # Métricas por Sprint
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.metric("🏆 Melhor Sprint", pontos_por_sprint.idxmax() if not pontos_por_sprint.empty else "N/A")
-        
-        with col2:
-            st.metric("📈 Maior Pontuação", f"{pontos_por_sprint.max():,.0f}" if not pontos_por_sprint.empty else "0")
-        
-        with col3:
-            media_sprint = pontos_por_sprint.mean() if not pontos_por_sprint.empty else 0
-            st.metric("📊 Média por Sprint", f"{media_sprint:,.0f}")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            # Gráfico de barras por sprint - VERTICAL
-            if not pontos_por_sprint.empty:
+        if not pontos_por_sprint.empty:
+            # Métricas por Sprint
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.metric("🏆 Melhor Sprint", pontos_por_sprint.idxmax())
+            
+            with col2:
+                st.metric("📈 Maior Pontuação", f"{pontos_por_sprint.max():,.0f}")
+            
+            with col3:
+                media_sprint = pontos_por_sprint.mean()
+                st.metric("📊 Média por Sprint", f"{media_sprint:,.0f}")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # Gráfico de barras por sprint - VERTICAL
                 fig = px.bar(
                     x=pontos_por_sprint.index,
                     y=pontos_por_sprint.values,
@@ -431,27 +344,25 @@ with tab2:
                 )
                 fig.update_traces(texttemplate='%{text:.0f}', textposition='outside')
                 st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.info("Nenhum dado disponível para exibir o gráfico de sprints.")
-        
-        with col2:
-            # Detalhamento por categoria na sprint selecionada
-            if sprint_selecionada != 'Todos':
-                sprint_data = doacoes_filtradas[doacoes_filtradas['SPRINT'] == sprint_selecionada]
-                if not sprint_data.empty and 'Categoria' in sprint_data.columns:
-                    cat_points = sprint_data.groupby('Categoria')['Total_Geral'].sum()
-                    if not cat_points.empty:
-                        fig = px.pie(
-                            values=cat_points.values,
-                            names=cat_points.index,
-                            title=f"Distribuição por Categoria - {sprint_selecionada}",
-                            hole=0.3
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
-                    else:
-                        st.info("Nenhuma categoria com dados para esta sprint.")
-                else:
-                    st.info("Nenhum dado disponível para a sprint selecionada.")
+            
+            with col2:
+                # Detalhamento por categoria na sprint selecionada
+                if sprint_selecionada != 'Todos':
+                    sprint_data = doacoes_filtradas[doacoes_filtradas['SPRINT'] == sprint_selecionada]
+                    if not sprint_data.empty and 'Categoria' in sprint_data.columns:
+                        cat_points = sprint_data.groupby('Categoria')['Total_Geral'].sum()
+                        if not cat_points.empty:
+                            fig = px.pie(
+                                values=cat_points.values,
+                                names=cat_points.index,
+                                title=f"Distribuição por Categoria - {sprint_selecionada}",
+                                hole=0.3
+                            )
+                            st.plotly_chart(fig, use_container_width=True)
+                        else:
+                            st.info("Nenhuma categoria com dados para esta sprint.")
+        else:
+            st.info("📊 Aguardando dados de doações para análise por sprint")
     else:
         st.info("📊 Aguardando dados de doações para análise por sprint")
 
@@ -463,8 +374,7 @@ with tab3:
     
     grupo_analise = grupo_selecionado if grupo_selecionado != 'Todos' else st.selectbox(
         'Escolha um grupo para detalhar:', 
-        sorted([str(g) for g in grupos_validos], 
-               key=lambda x: (x.isdigit(), int(x) if x.isdigit() else x))
+        sorted([str(g) for g in grupos_validos])
     )
     
     if grupo_analise != 'Todos':
@@ -478,10 +388,10 @@ with tab3:
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            total_pontos_grupo = grupo_data['Total_Geral'].sum() if 'Total_Geral' in grupo_data.columns else 0
+            total_pontos_grupo = grupo_data['Total_Geral'].sum() if 'Total_Geral' in grupo_data.columns and len(grupo_data) > 0 else 0
             st.metric("🏅 Pontos Totais", f"{total_pontos_grupo:,.0f}")
         with col2:
-            total_doacoes_grupo = grupo_data['Quantidade'].sum() if 'Quantidade' in grupo_data.columns else 0
+            total_doacoes_grupo = grupo_data['Quantidade'].sum() if 'Quantidade' in grupo_data.columns and len(grupo_data) > 0 else 0
             st.metric("📦 Total de Doações", f"{total_doacoes_grupo:,.0f}")
         with col3:
             st.metric("🙋 Membros", len(participantes_grupo))
@@ -502,7 +412,7 @@ with tab3:
                     medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "🎯"
                     st.write(f"{medal} **{nome}**: {pontos:,.0f} pontos")
             else:
-                st.info("📝 Aguardando dados de doações para este grupo")
+                st.info("📊 Aguardando dados de doações para este grupo")
         
         with col2:
             st.subheader("📊 Distribuição por Categoria")
@@ -526,20 +436,20 @@ with tab3:
 with tab4:
     st.header("👤 Análise Individual")
     
-    # RANKING COMPLETO DE TODOS OS PARTICIPANTES - INCLUINDO OS COM 0 PONTOS
+    # RANKING COMPLETO DE TODOS OS PARTICIPANTES
     st.subheader("🏆 Ranking Geral de Participantes")
     
-    # Calcular pontos por participante - INCLUINDO TODOS OS PARTICIPANTES (MESMO COM 0 PONTOS)
+    # Calcular pontos por participante
     ranking_completo = []
     
     for _, participante in participantes.iterrows():
         nome = participante['Nome']
         grupo = participante['Grupo']
         
-        # Buscar doações do participante (pode retornar DataFrame vazio)
+        # Buscar doações do participante
         doacoes_participante = doacoes_filtradas[doacoes_filtradas['Nome'] == nome]
-        total_pontos = doacoes_participante['Total_Geral'].sum() if 'Total_Geral' in doacoes_participante.columns else 0
-        total_doacoes = doacoes_participante['Quantidade'].sum() if 'Quantidade' in doacoes_participante.columns else 0
+        total_pontos = doacoes_participante['Total_Geral'].sum() if 'Total_Geral' in doacoes_participante.columns and len(doacoes_participante) > 0 else 0
+        total_doacoes = doacoes_participante['Quantidade'].sum() if 'Quantidade' in doacoes_participante.columns and len(doacoes_participante) > 0 else 0
         
         ranking_completo.append({
             'Nome': nome,
@@ -551,7 +461,7 @@ with tab4:
     # Criar DataFrame do ranking
     ranking_df = pd.DataFrame(ranking_completo)
     
-    # Ordenar por pontuação (maior primeiro) - participantes com 0 pontos ficam no final
+    # Ordenar por pontuação (maior primeiro)
     ranking_df = ranking_df.sort_values(['Total_Pontos', 'Nome'], ascending=[False, True])
     
     # Adicionar coluna de posição com emojis
@@ -583,20 +493,14 @@ with tab4:
     with col2:
         # Top 3 com destaque
         st.subheader("🎉 Pódio")
-        if len(ranking_df) >= 1 and ranking_df.iloc[0]['Total_Pontos'] > 0:
+        if len(ranking_df) >= 1:
             st.success(f"🥇 **1º Lugar**\n{ranking_df.iloc[0]['Nome']}\n{ranking_df.iloc[0]['Total_Pontos']:,.0f} pontos")
-        else:
-            st.info("🥇 **1º Lugar**\nAguardando pontuação")
             
-        if len(ranking_df) >= 2 and ranking_df.iloc[1]['Total_Pontos'] > 0:
+        if len(ranking_df) >= 2:
             st.info(f"🥈 **2º Lugar**\n{ranking_df.iloc[1]['Nome']}\n{ranking_df.iloc[1]['Total_Pontos']:,.0f} pontos")
-        else:
-            st.info("🥈 **2º Lugar**\nAguardando pontuação")
             
-        if len(ranking_df) >= 3 and ranking_df.iloc[2]['Total_Pontos'] > 0:
+        if len(ranking_df) >= 3:
             st.warning(f"🥉 **3º Lugar**\n{ranking_df.iloc[2]['Nome']}\n{ranking_df.iloc[2]['Total_Pontos']:,.0f} pontos")
-        else:
-            st.info("🥉 **3º Lugar**\nAguardando pontuação")
         
         # Estatísticas do ranking
         st.subheader("📊 Estatísticas")
@@ -604,8 +508,6 @@ with tab4:
         participantes_com_pontos = len(ranking_df[ranking_df['Total_Pontos'] > 0])
         st.metric("Participantes com Pontos", participantes_com_pontos)
         st.metric("Média de Pontos", f"{ranking_df['Total_Pontos'].mean():.0f}")
-        if ranking_df['Total_Pontos'].max() > 0:
-            st.metric("Maior Pontuação", f"{ranking_df['Total_Pontos'].max():.0f}")
     
     # Análise individual específica
     st.subheader("📊 Análise Detalhada por Participante")
@@ -624,9 +526,9 @@ with tab4:
         with col1:
             st.subheader(f"📈 Desempenho de {participante_selecionado}")
             st.metric("👥 Grupo", grupo_participante)
-            total_pontos_participante = participante_data['Total_Geral'].sum() if 'Total_Geral' in participante_data.columns else 0
+            total_pontos_participante = participante_data['Total_Geral'].sum() if 'Total_Geral' in participante_data.columns and len(participante_data) > 0 else 0
             st.metric("🏅 Pontos Totais", f"{total_pontos_participante:,.0f}")
-            total_doacoes_participante = participante_data['Quantidade'].sum() if 'Quantidade' in participante_data.columns else 0
+            total_doacoes_participante = participante_data['Quantidade'].sum() if 'Quantidade' in participante_data.columns and len(participante_data) > 0 else 0
             st.metric("📦 Total de Doações", f"{total_doacoes_participante:,.0f}")
             media_doacao = total_pontos_participante / total_doacoes_participante if total_doacoes_participante > 0 else 0
             st.metric("⭐ Média por Doação", f"{media_doacao:.0f}")
@@ -635,13 +537,16 @@ with tab4:
             st.subheader("📊 Distribuição por Sprint")
             if not participante_data.empty and 'SPRINT' in participante_data.columns:
                 sprint_points = participante_data.groupby('SPRINT')['Total_Geral'].sum()
-                fig = px.pie(
-                    values=sprint_points.values,
-                    names=sprint_points.index,
-                    title="Pontuação por Sprint",
-                    hole=0.4
-                )
-                st.plotly_chart(fig, use_container_width=True)
+                if not sprint_points.empty:
+                    fig = px.pie(
+                        values=sprint_points.values,
+                        names=sprint_points.index,
+                        title="Pontuação por Sprint",
+                        hole=0.4
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("Nenhuma doação registrada para este participante.")
             else:
                 st.info("Nenhuma doação registrada para este participante.")
         
@@ -683,8 +588,6 @@ with st.sidebar:
     st.write(f"📊 Doações carregadas: {len(doacoes):,}")
     st.write(f"👥 Participantes: {len(participantes):,}")
     st.write(f"🎯 Categorias: {len(categorias):,}")
-    if 'Total_Geral' in doacoes.columns:
-        st.write(f"📈 Pontuação total: {doacoes['Total_Geral'].sum():,}")
     
     if st.button("🔄 Recarregar Dados"):
         st.cache_data.clear()
