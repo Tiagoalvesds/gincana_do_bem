@@ -71,6 +71,9 @@ def load_data():
         categorias = pd.read_excel(PLANILHA_PATH, sheet_name='categorias')
         doacoes = pd.read_excel(PLANILHA_PATH, sheet_name='doacoes_registros')
         
+        # Corrigir colunas invertidas em doacoes
+        doacoes = doacoes.rename(columns={'Categoria': 'Tipo_Item', 'Tipo_Item': 'Categoria'})
+        
         # Converter coluna Grupo para string para evitar problemas de tipo
         participantes['Grupo'] = participantes['Grupo'].astype(str)
         if 'Grupo' in doacoes.columns:
