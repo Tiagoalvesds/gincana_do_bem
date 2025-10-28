@@ -71,8 +71,8 @@ def load_data():
         categorias = pd.read_excel(PLANILHA_PATH, sheet_name='categorias')
         doacoes = pd.read_excel(PLANILHA_PATH, sheet_name='doacoes_registros')
         
-        # Corrigir colunas invertidas em doacoes
-        doacoes = doacoes.rename(columns={'Categoria': 'Tipo_Item', 'Tipo_Item': 'Categoria'})
+        # REMOVER ESTA LINHA QUE ESTÁ CAUSANDO O PROBLEMA:
+        # doacoes = doacoes.rename(columns={'Categoria': 'Tipo_Item', 'Tipo_Item': 'Categoria'})
         
         # Converter coluna Grupo para string para evitar problemas de tipo
         participantes['Grupo'] = participantes['Grupo'].astype(str)
@@ -98,7 +98,6 @@ def load_data():
         st.error(f"❌ Erro ao carregar dados: {e}")
         st.info("💡 Dica: Verifique se a planilha está no formato correto e se todas as abas existem")
         return None, None, None
-
 # Função para criar dados de demonstração
 def create_demo_data():
     st.warning("📊 Usando dados de demonstração - Carregue sua planilha para ver os dados reais")
