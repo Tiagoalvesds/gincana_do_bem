@@ -641,3 +641,4 @@ with st.sidebar:
     if st.button("🔄 Recarregar Dados"):
         st.cache_data.clear()
         st.rerun()
+        st.balloons()
