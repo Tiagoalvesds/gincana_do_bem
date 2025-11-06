@@ -178,6 +178,9 @@ participantes, categorias, doacoes = load_data()
 if participantes is None:
     participantes, categorias, doacoes = create_demo_data()
 
+# ✅ Efeito balões ao abrir
+st.balloons()
+
 # Sidebar - Filtros
 st.sidebar.title("🔍 Filtros e Controles")
 
@@ -641,4 +644,3 @@ with st.sidebar:
     if st.button("🔄 Recarregar Dados"):
         st.cache_data.clear()
         st.rerun()
-        st.balloons()
