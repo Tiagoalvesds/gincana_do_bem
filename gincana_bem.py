@@ -71,9 +71,7 @@ def load_data():
         categorias = pd.read_excel(PLANILHA_PATH, sheet_name='categorias')
         doacoes = pd.read_excel(PLANILHA_PATH, sheet_name='doacoes_registros')
         
-        # REMOVER ESTA LINHA QUE ESTÁ CAUSANDO O PROBLEMA:
-        # doacoes = doacoes.rename(columns={'Categoria': 'Tipo_Item', 'Tipo_Item': 'Categoria'})
-        
+      
         # Converter coluna Grupo para string para evitar problemas de tipo
         participantes['Grupo'] = participantes['Grupo'].astype(str)
         if 'Grupo' in doacoes.columns:
@@ -250,7 +248,7 @@ with tab1:
                 # Definir cores específicas para cada grupo
                 cores_grupos = {
                     'PACE DO BEM': '#FF6B6B',
-                    '2': '#4ECDC4', 
+                    'MOTIVADOS NETSUPRE': '#4ECDC4', 
                     'VIRTUX': '#45B7D1'
                 }
                 
