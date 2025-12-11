@@ -311,8 +311,8 @@ with tab1:
         st.info("Roupas e Calçados")
     
     with col4:
-        st.metric("📚 3º SPRINT", "15/12/2025")
-        st.info("Material Escolar")
+        st.metric("🛒 3º SPRINT 👖", "15/12/2025")
+        st.info("Alimentos+Roupas")
     
     with col5:
         st.metric("🏁 Término", "19/12/2025")
