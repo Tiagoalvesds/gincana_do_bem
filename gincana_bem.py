@@ -108,12 +108,12 @@ def create_demo_data():
             'Ismael', 'Jessica Alcantara', 'Jorge Henrique', 'Jorge Nazaré', 'Kamila Nascimento',
             'Lucas Dias', 'Lucas Rodrigues', 'Matheus Lima', 'Maycon cordeiro', 'Milena Jorge',
             'Osias Fernando', 'Pabllo Gomes', 'Patricia Barbosa', 'Raécio Griêco', 'Thiago Porto',
-            'Tiago Alves', 'Wanderson Saldanha'
+            'Tiago Alves', 'Wanderson Saldanha','Leonardo Max Pereira'
         ],
         'Grupo': ['MOTIVADOS NETSUPRE', 'VIRTUX', 'VIRTUX', 'VIRTUX', 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 'PACE DO BEM', 'VIRTUX', 
                  'MOTIVADOS NETSUPRE', 'PACE DO BEM', 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 'VIRTUX', 'VIRTUX', 'MOTIVADOS NETSUPRE', 'PACE DO BEM', 
                  'MOTIVADOS NETSUPRE', 'PACE DO BEM', 'PACE DO BEM', 'MOTIVADOS NETSUPRE', 'MOTIVADOS NETSUPRE', 'VIRTUX', 'PACE DO BEM', 'PACE DO BEM', 
-                 'VIRTUX', 'MOTIVADOS NETSUPRE']
+                 'VIRTUX', 'MOTIVADOS NETSUPRE','VIRTUX']
     })
     
     categorias = pd.DataFrame({
